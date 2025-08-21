@@ -40,6 +40,7 @@ const cspResourcesByDirective = {
     'https://*.campsite.com',
     'wss://*.campsite.com',
     process.env.NODE_ENV !== 'production' && 'http://api.campsite.test:3001',
+    process.env.NODE_ENV !== 'production' && 'http://localhost:3001',
     process.env.NODE_ENV !== 'production' && 'ws://localhost:9000',
     'https://campsite-media.s3.amazonaws.com',
     process.env.NODE_ENV !== 'production' && 'https://campsite-media-dev.s3.amazonaws.com',

@@ -5,13 +5,9 @@ class AddPreviousContentColumnsToPostAndPostComment < ActiveRecord::Migration[7.
 
     reversible do |dir|
       dir.up do
-        Post.in_batches do |posts|
-          posts.update_all("previous_description = description")
-        end
-
-        PostComment.in_batches do |comments|
-          comments.update_all("previous_body = body")
-        end
+        # Use raw SQL to avoid model dependencies during migration
+        execute "UPDATE posts SET previous_description = description WHERE previous_description IS NULL"
+        execute "UPDATE post_comments SET previous_body = body WHERE previous_body IS NULL"
       end
     end
   end

@@ -1,0 +1,356 @@
+{
+  "apps": [
+    {
+      "path": "apps/site",
+      "name": "@campsite/site",
+      "framework": "nextjs",
+      "routes": [
+        {
+          "path": "/",
+          "type": "static",
+          "purpose": "landing page"
+        },
+        {
+          "path": "/blog",
+          "type": "static",
+          "purpose": "blog listing"
+        },
+        {
+          "path": "/blog/[slug]",
+          "type": "dynamic",
+          "purpose": "blog post detail"
+        },
+        {
+          "path": "/changelog",
+          "type": "static",
+          "purpose": "changelog listing"
+        },
+        {
+          "path": "/changelog/[slug]",
+          "type": "dynamic",
+          "purpose": "changelog detail"
+        },
+        {
+          "path": "/glossary/slack",
+          "type": "static",
+          "purpose": "slack glossary listing"
+        },
+        {
+          "path": "/glossary/slack/[slug]",
+          "type": "dynamic",
+          "purpose": "glossary entry detail"
+        },
+        {
+          "path": "/pricing",
+          "type": "static",
+          "purpose": "pricing page"
+        },
+        {
+          "path": "/contact",
+          "type": "static",
+          "purpose": "contact page"
+        }
+      ]
+    },
+    {
+      "path": "apps/web",
+      "name": "@campsite/web",
+      "framework": "nextjs",
+      "routes": [
+        {
+          "path": "/",
+          "type": "static",
+          "purpose": "app redirect/index"
+        },
+        {
+          "path": "/[org]",
+          "type": "dynamic",
+          "purpose": "organization dashboard"
+        },
+        {
+          "path": "/[org]/posts/[postId]",
+          "type": "dynamic",
+          "purpose": "post detail view"
+        },
+        {
+          "path": "/[org]/projects/[projectId]",
+          "type": "dynamic",
+          "purpose": "project detail view"
+        },
+        {
+          "path": "/[org]/calls/[callId]",
+          "type": "dynamic",
+          "purpose": "call detail view"
+        },
+        {
+          "path": "/[org]/people/[username]",
+          "type": "dynamic",
+          "purpose": "user profile view"
+        }
+      ]
+    },
+    {
+      "path": "apps/figma",
+      "name": "@campsite/figma",
+      "framework": "other",
+      "routes": []
+    }
+  ],
+  "cms": {
+    "type": "sanity",
+    "confidence": 0.95,
+    "models": [
+      {
+        "name": "glossary",
+        "fields": [
+          {
+            "name": "category",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "slug",
+            "type": "slug",
+            "required": true
+          },
+          {
+            "name": "publishedAt",
+            "type": "datetime",
+            "required": true
+          },
+          {
+            "name": "shortDescription",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "markdown",
+            "type": "markdown"
+          }
+        ],
+        "purpose": "Glossary entries for different categories (Slack, Linear)"
+      }
+    ],
+    "usage": [
+      {
+        "route": "/glossary/slack",
+        "query": "*[_type == \"glossary\" && defined(slug.current)]|order(publishedAt desc)[0...100]{_id, title, category, slug, publishedAt}",
+        "model": "glossary",
+        "purpose": "List all glossary entries"
+      },
+      {
+        "route": "/glossary/slack/[slug]",
+        "query": "*[_type == \"glossary\" && slug.current == $slug][0]",
+        "model": "glossary",
+        "purpose": "Get specific glossary entry by slug"
+      }
+    ]
+  },
+  "migration": {
+    "builderModels": [
+      {
+        "name": "glossary-entry",
+        "type": "data",
+        "fields": [
+          {
+            "name": "category",
+            "type": "string",
+            "defaultValue": "slack"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "slug",
+            "type": "string"
+          },
+          {
+            "name": "publishedAt",
+            "type": "date"
+          },
+          {
+            "name": "shortDescription",
+            "type": "string"
+          },
+          {
+            "name": "content",
+            "type": "richText"
+          }
+        ]
+      },
+      {
+        "name": "blog-post",
+        "type": "data",
+        "fields": [
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "author",
+            "type": "string"
+          },
+          {
+            "name": "publishedAt",
+            "type": "date"
+          },
+          {
+            "name": "posterLight",
+            "type": "file"
+          },
+          {
+            "name": "posterDark",
+            "type": "file"
+          },
+          {
+            "name": "content",
+            "type": "richText"
+          },
+          {
+            "name": "pinned",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "name": "page",
+        "type": "page",
+        "fields": [
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "blocks",
+            "type": "blocks"
+          }
+        ],
+        "targeting": "urlPath"
+      }
+    ],
+    "dataMapping": [
+      {
+        "source": "sanity.glossary.title",
+        "target": "builder.glossary-entry.title",
+        "transform": "direct"
+      },
+      {
+        "source": "sanity.glossary.category",
+        "target": "builder.glossary-entry.category",
+        "transform": "direct"
+      },
+      {
+        "source": "sanity.glossary.slug.current",
+        "target": "builder.glossary-entry.slug",
+        "transform": "direct"
+      },
+      {
+        "source": "sanity.glossary.publishedAt",
+        "target": "builder.glossary-entry.publishedAt",
+        "transform": "dateConversion"
+      },
+      {
+        "source": "sanity.glossary.shortDescription",
+        "target": "builder.glossary-entry.shortDescription",
+        "transform": "direct"
+      },
+      {
+        "source": "sanity.glossary.markdown",
+        "target": "builder.glossary-entry.content",
+        "transform": "markdownToRichText"
+      },
+      {
+        "source": "mdx.frontmatter.title",
+        "target": "builder.blog-post.title",
+        "transform": "direct"
+      },
+      {
+        "source": "mdx.frontmatter.description",
+        "target": "builder.blog-post.description",
+        "transform": "direct"
+      },
+      {
+        "source": "mdx.content",
+        "target": "builder.blog-post.content",
+        "transform": "mdxToRichText"
+      }
+    ],
+    "integrationSteps": [
+      {
+        "order": 1,
+        "action": "Install Builder.io SDK",
+        "details": "Add @builder.io/react and @builder.io/sdk-react to package.json",
+        "code": "npm install @builder.io/react @builder.io/sdk-react"
+      },
+      {
+        "order": 2,
+        "action": "Set up Builder configuration",
+        "details": "Create Builder client and configure API key",
+        "code": "// lib/builder.ts\nimport { builder } from '@builder.io/react'\n\nbuilder.init(process.env.BUILDER_PUBLIC_KEY!)\n\nexport { builder }"
+      },
+      {
+        "order": 3,
+        "action": "Create data migration script",
+        "details": "Script to migrate Sanity glossary entries to Builder data models",
+        "code": "// scripts/migrate-sanity-to-builder.ts\nimport { builder } from '../lib/builder'\nimport { client as sanityClient } from '../sanity/client'\n\nasync function migrateGlossaryEntries() {\n  const entries = await sanityClient.fetch('*[_type == \"glossary\"]')\n  \n  for (const entry of entries) {\n    await builder.create('glossary-entry', {\n      data: {\n        title: entry.title,\n        category: entry.category,\n        slug: entry.slug.current,\n        publishedAt: entry.publishedAt,\n        shortDescription: entry.shortDescription,\n        content: convertMarkdownToRichText(entry.markdown)\n      }\n    })\n  }\n}"
+      },
+      {
+        "order": 4,
+        "action": "Update glossary listing page",
+        "details": "Replace Sanity queries with Builder data fetching",
+        "code": "// app/glossary/slack/(index)/page.tsx\nimport { builder } from '@builder.io/react'\n\nexport default async function GlossaryPage() {\n  const entries = await builder.getAll('glossary-entry', {\n    query: {\n      'data.category': 'slack'\n    },\n    options: {\n      sort: {\n        'data.publishedAt': -1\n      }\n    }\n  })\n\n  return <GlossaryIndex posts={entries} />\n}"
+      },
+      {
+        "order": 5,
+        "action": "Update glossary detail pages",
+        "details": "Replace Sanity queries with Builder data fetching for individual entries",
+        "code": "// app/glossary/slack/[slug]/page.tsx\nimport { builder } from '@builder.io/react'\n\nexport default async function GlossaryEntryPage({ params }: { params: { slug: string } }) {\n  const entry = await builder.get('glossary-entry', {\n    query: {\n      'data.slug': params.slug,\n      'data.category': 'slack'\n    }\n  })\n\n  if (!entry) notFound()\n\n  return (\n    <article>\n      <h1>{entry.data.title}</h1>\n      <BuilderComponent model=\"glossary-entry\" content={entry} />\n    </article>\n  )\n}"
+      },
+      {
+        "order": 6,
+        "action": "Migrate blog posts",
+        "details": "Convert MDX files to Builder blog-post data model",
+        "code": "// scripts/migrate-blog-posts.ts\nimport fs from 'fs'\nimport matter from 'gray-matter'\nimport { builder } from '../lib/builder'\n\nasync function migrateBlogPosts() {\n  const files = fs.readdirSync('app/blog/_cms')\n  \n  for (const file of files) {\n    const content = fs.readFileSync(`app/blog/_cms/${file}`, 'utf-8')\n    const { data, content: mdxContent } = matter(content)\n    \n    await builder.create('blog-post', {\n      data: {\n        title: data.title,\n        description: data.description,\n        author: data.author,\n        publishedAt: data.publishedAt,\n        content: convertMdxToRichText(mdxContent),\n        pinned: data.pinned || false\n      }\n    })\n  }\n}"
+      },
+      {
+        "order": 7,
+        "action": "Create Builder page models",
+        "details": "Set up page models for marketing pages with visual editing",
+        "code": "// components/BuilderPage.tsx\nimport { BuilderComponent, builder } from '@builder.io/react'\n\ninterface BuilderPageProps {\n  page: any\n}\n\nexport function BuilderPage({ page }: BuilderPageProps) {\n  return (\n    <BuilderComponent\n      model=\"page\"\n      content={page}\n    />\n  )\n}\n\n// For pages like pricing, contact, etc.\nexport async function getBuilderPage(urlPath: string) {\n  return await builder\n    .get('page', {\n      userAttributes: {\n        urlPath\n      }\n    })\n    .toPromise()\n}"
+      },
+      {
+        "order": 8,
+        "action": "Update routing and fallbacks",
+        "details": "Implement Builder page routing with Next.js catch-all routes",
+        "code": "// app/[[...page]]/page.tsx\nimport { BuilderComponent, builder } from '@builder.io/react'\nimport { notFound } from 'next/navigation'\n\nexport default async function CatchAllPage({ params }: { params: { page?: string[] } }) {\n  const urlPath = '/' + (params.page?.join('/') || '')\n  \n  const page = await builder\n    .get('page', {\n      userAttributes: {\n        urlPath\n      }\n    })\n    .toPromise()\n\n  if (!page) {\n    return notFound()\n  }\n\n  return <BuilderComponent model=\"page\" content={page} />\n}"
+      }
+    ],
+    "estimatedEffort": "3-4 days"
+  },
+  "recommendations": [
+    "Start with migrating the Sanity glossary entries to Builder data models as they are well-structured and limited in scope",
+    "Set up Builder data models before starting migration to ensure proper field mapping",
+    "Consider keeping Sanity running in parallel during migration for rollback capability",
+    "Migrate blog posts from MDX files to Builder for better content management",
+    "Use Builder's visual editor for marketing pages (pricing, contact) to enable non-technical team members to make updates",
+    "Implement proper preview/draft functionality using Builder's preview API",
+    "Set up Builder webhooks for cache invalidation and revalidation",
+    "Consider migrating the changelog system from GitHub releases to Builder for better control",
+    "Test the migration thoroughly with a staging environment before going live",
+    "Document the new content workflows for the team"
+  ]
+}
