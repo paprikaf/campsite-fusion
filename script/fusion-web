@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Fusion helper for Campsite web app
+# Usage:
+#   bash script/fusion-web setup   # install deps and build only needed packages
+#   bash script/fusion-web dev     # start the web app dev server
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+WEB_DIR="${ROOT_DIR}/apps/web"
+
+log() {
+  printf "\n[fusion-web] %s\n" "$*"
+}
+
+cmd_setup() {
+  log "Enabling corepack and ensuring pnpm is available"
+  command -v corepack >/dev/null 2>&1 && corepack enable || true
+
+  log "Installing workspace dependencies (root)"
+  cd "${ROOT_DIR}"
+  # Allow lockfile updates in CI/ephemeral envs
+  pnpm install --frozen-lockfile=false
+
+  log "Building required packages for the web app (skipping figma)"
+  # Build only the libraries the web app needs; explicitly skip the figma package
+  pnpm -r --aggregate-output \
+    --filter "!@campsite/figma" \
+    --filter "@campsite/regex" \
+    --filter "@campsite/types" \
+    --filter "@campsite/ui" \
+    --filter "@campsite/editor" run build
+
+  log "Ensuring web app deps are linked"
+  cd "${WEB_DIR}"
+  pnpm install --frozen-lockfile=false || true
+}
+
+cmd_dev() {
+  cd "${WEB_DIR}"
+  log "Starting Next.js dev server on port 3000"
+  pnpm dev
+}
+
+case "${1:-}" in
+  setup)
+    cmd_setup
+    ;;
+  dev)
+    cmd_dev
+    ;;
+  *)
+    echo "Usage: bash script/fusion-web [setup|dev]" >&2
+    exit 2
+    ;;
+esac
+
+
