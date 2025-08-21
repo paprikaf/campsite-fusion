@@ -106,11 +106,12 @@ export function getMarkdownExtensions(options?: GetMarkdownExtensionsOptions) {
     E.Mention.configure(options?.mention),
     E.Reaction,
 
-    E.Details.configure(options?.details),
-    E.DetailsContent.extend({
-      content: '(block|customBlock?)+'
-    }),
-    E.DetailsSummary,
+    // Details extensions disabled - requires TipTap Pro license
+    // E.Details.configure(options?.details),
+    // E.DetailsContent.extend({
+    //   content: '(block|customBlock?)+'
+    // }),
+    // E.DetailsSummary,
 
     E.PostNoteAttachment.extend({
       addNodeView: options?.postNoteAttachment?.addNodeView,
