@@ -9,6 +9,11 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true'
 })
 
+// Dynamically allow the configured API origin in CSP (useful for tunnels in Fusion)
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL ? (() => {
+  try { return new URL(process.env.NEXT_PUBLIC_API_URL).origin } catch { return undefined }
+})() : undefined
+
 const cspResourcesByDirective = {
   'script-src': [
     "'self'",
@@ -41,6 +46,7 @@ const cspResourcesByDirective = {
     'wss://*.campsite.com',
     process.env.NODE_ENV !== 'production' && 'http://api.campsite.test:3001',
     process.env.NODE_ENV !== 'production' && 'http://localhost:3001',
+    apiOrigin,
     process.env.NODE_ENV !== 'production' && 'ws://localhost:9000',
     'https://campsite-media.s3.amazonaws.com',
     process.env.NODE_ENV !== 'production' && 'https://campsite-media-dev.s3.amazonaws.com',
@@ -77,6 +83,7 @@ const cspResourcesByDirective = {
     process.env.NODE_ENV !== 'production' && 'https://campsite-dev.imgix.video',
     process.env.NODE_ENV !== 'production' && 'https://campsite-api-dev.imgix.net',
     process.env.NODE_ENV !== 'production' && 'http://api.campsite.test:3001',
+    apiOrigin,
     'https://media.tenor.com' // used for Tenor gifs,
   ],
   'manifest-src': ["'self'"],
